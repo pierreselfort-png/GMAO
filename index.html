@@ -1,0 +1,342 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>GMAO - Maintenance</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo">🛠️</div>
+      <div>
+        <div class="title">GMAO</div>
+        <div class="subtitle">Inventaire • Stock • Interventions • Fournisseurs</div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button id="btnExport" class="btn">Export JSON</button>
+      <label class="btn btn-secondary" for="fileImport">Import JSON</label>
+      <input id="fileImport" type="file" accept="application/json" hidden />
+      <button id="btnReset" class="btn btn-danger">Reset</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <nav class="tabs">
+      <button class="tab active" data-tab="dashboard">Dashboard</button>
+      <button class="tab" data-tab="machines">Machines</button>
+      <button class="tab" data-tab="parts">Pièces</button>
+      <button class="tab" data-tab="interventions">Interventions</button>
+      <button class="tab" data-tab="suppliers">Fournisseurs</button>
+    </nav>
+
+    <!-- DASHBOARD -->
+    <section class="panel active" id="panel-dashboard">
+      <div class="grid-3">
+        <div class="card">
+          <div class="card-title">Machines</div>
+          <div class="kpi" id="kpiMachines">0</div>
+          <div class="muted">Inventaire total</div>
+        </div>
+        <div class="card">
+          <div class="card-title">Pièces</div>
+          <div class="kpi" id="kpiParts">0</div>
+          <div class="muted">Références en stock</div>
+        </div>
+        <div class="card">
+          <div class="card-title">Interventions</div>
+          <div class="kpi" id="kpiInterventions">0</div>
+          <div class="muted">Total</div>
+        </div>
+      </div>
+
+      <div class="grid-2 mt">
+        <div class="card">
+          <div class="card-title">Interventions à venir (30 jours)</div>
+          <div id="upcomingList" class="list"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Alertes stock (seuil)</div>
+          <div class="row gap">
+            <label class="muted">Seuil ≤</label>
+            <input id="stockThreshold" type="number" min="0" value="2" class="input small" />
+            <button id="btnRefreshAlerts" class="btn btn-secondary small">Rafraîchir</button>
+          </div>
+          <div id="stockAlerts" class="list mt-sm"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- MACHINES -->
+    <section class="panel" id="panel-machines">
+      <div class="panel-head">
+        <h2>Inventaire machines</h2>
+        <input id="searchMachines" class="input" placeholder="Rechercher (nom, id, lieu, fournisseur…)" />
+      </div>
+
+      <div class="card">
+        <div class="card-title">Ajouter / Modifier une machine</div>
+        <form id="formMachine" class="form">
+          <input type="hidden" id="machineId" />
+
+          <div class="grid-2">
+            <label>Nom
+              <input id="machineName" class="input" required />
+            </label>
+            <label>N° d'identification
+              <input id="machineIdent" class="input" required />
+            </label>
+          </div>
+
+          <div class="grid-3">
+            <label>Coût
+              <input id="machineCost" type="number" min="0" step="0.01" class="input" />
+            </label>
+            <label>Fournisseur
+              <select id="machineSupplier" class="input"></select>
+            </label>
+            <label>État
+              <select id="machineState" class="input">
+                <option value="OK">OK</option>
+                <option value="À surveiller">À surveiller</option>
+                <option value="En panne">En panne</option>
+                <option value="Hors service">Hors service</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="grid-2">
+            <label>Lieu (atelier / zone)
+              <input id="machineLocation" class="input" />
+            </label>
+            <label>Notes
+              <input id="machineNotes" class="input" placeholder="Optionnel" />
+            </label>
+          </div>
+
+          <div class="row gap">
+            <button class="btn" type="submit">Enregistrer</button>
+            <button class="btn btn-secondary" id="btnMachineClear" type="button">Vider</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="card mt">
+        <div class="card-title">Liste des machines</div>
+        <div class="table-wrap">
+          <table class="table" id="tableMachines">
+            <thead>
+              <tr>
+                <th>Nom</th>
+                <th>ID</th>
+                <th>Coût</th>
+                <th>Fournisseur</th>
+                <th>État</th>
+                <th>Lieu</th>
+                <th class="th-actions">Actions</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- PARTS -->
+    <section class="panel" id="panel-parts">
+      <div class="panel-head">
+        <h2>Stock pièces détachées</h2>
+        <input id="searchParts" class="input" placeholder="Rechercher (nom, lieu, fournisseur…)" />
+      </div>
+
+      <div class="card">
+        <div class="card-title">Ajouter / Modifier une pièce</div>
+        <form id="formPart" class="form">
+          <input type="hidden" id="partId" />
+
+          <div class="grid-2">
+            <label>Nom
+              <input id="partName" class="input" required />
+            </label>
+            <label>Quantité
+              <input id="partQty" type="number" min="0" step="1" class="input" required />
+            </label>
+          </div>
+
+          <div class="grid-3">
+            <label>Coût unitaire
+              <input id="partCost" type="number" min="0" step="0.01" class="input" />
+            </label>
+            <label>Fournisseur
+              <select id="partSupplier" class="input"></select>
+            </label>
+            <label>Lieu de stockage
+              <input id="partLocation" class="input" />
+            </label>
+          </div>
+
+          <div class="row gap">
+            <button class="btn" type="submit">Enregistrer</button>
+            <button class="btn btn-secondary" id="btnPartClear" type="button">Vider</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="card mt">
+        <div class="card-title">Liste des pièces</div>
+        <div class="table-wrap">
+          <table class="table" id="tableParts">
+            <thead>
+              <tr>
+                <th>Nom</th>
+                <th>Qté</th>
+                <th>Coût</th>
+                <th>Fournisseur</th>
+                <th>Stockage</th>
+                <th class="th-actions">Actions</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- INTERVENTIONS -->
+    <section class="panel" id="panel-interventions">
+      <div class="panel-head">
+        <h2>Planification & historique interventions</h2>
+        <input id="searchInterventions" class="input" placeholder="Rechercher (motif, machine, statut…)" />
+      </div>
+
+      <div class="card">
+        <div class="card-title">Ajouter / Modifier une intervention</div>
+        <form id="formIntervention" class="form">
+          <input type="hidden" id="interventionId" />
+
+          <div class="grid-3">
+            <label>Date
+              <input id="interventionDate" type="date" class="input" required />
+            </label>
+            <label>Machine concernée
+              <select id="interventionMachine" class="input"></select>
+            </label>
+            <label>Statut
+              <select id="interventionStatus" class="input">
+                <option value="Planifiée">Planifiée</option>
+                <option value="En cours">En cours</option>
+                <option value="Terminée">Terminée</option>
+                <option value="Annulée">Annulée</option>
+              </select>
+            </label>
+          </div>
+
+          <label>Motif / Description
+            <input id="interventionMotif" class="input" required />
+          </label>
+
+          <div class="grid-2">
+            <label>Technicien (optionnel)
+              <input id="interventionTech" class="input" />
+            </label>
+            <label>Durée (min, optionnel)
+              <input id="interventionDuration" type="number" min="0" step="1" class="input" />
+            </label>
+          </div>
+
+          <div class="row gap">
+            <button class="btn" type="submit">Enregistrer</button>
+            <button class="btn btn-secondary" id="btnInterventionClear" type="button">Vider</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="card mt">
+        <div class="card-title">Liste des interventions</div>
+        <div class="table-wrap">
+          <table class="table" id="tableInterventions">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Machine</th>
+                <th>Motif</th>
+                <th>Statut</th>
+                <th class="th-actions">Actions</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- SUPPLIERS -->
+    <section class="panel" id="panel-suppliers">
+      <div class="panel-head">
+        <h2>Fournisseurs</h2>
+        <input id="searchSuppliers" class="input" placeholder="Rechercher (nom, email, tel…)" />
+      </div>
+
+      <div class="card">
+        <div class="card-title">Ajouter / Modifier un fournisseur</div>
+        <form id="formSupplier" class="form">
+          <input type="hidden" id="supplierId" />
+
+          <div class="grid-2">
+            <label>Nom
+              <input id="supplierName" class="input" required />
+            </label>
+            <label>Contact (nom)
+              <input id="supplierContact" class="input" />
+            </label>
+          </div>
+
+          <div class="grid-3">
+            <label>Email
+              <input id="supplierEmail" type="email" class="input" />
+            </label>
+            <label>Téléphone
+              <input id="supplierPhone" class="input" />
+            </label>
+            <label>Site (optionnel)
+              <input id="supplierWebsite" class="input" />
+            </label>
+          </div>
+
+          <div class="row gap">
+            <button class="btn" type="submit">Enregistrer</button>
+            <button class="btn btn-secondary" id="btnSupplierClear" type="button">Vider</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="card mt">
+        <div class="card-title">Liste des fournisseurs</div>
+        <div class="table-wrap">
+          <table class="table" id="tableSuppliers">
+            <thead>
+              <tr>
+                <th>Nom</th>
+                <th>Contact</th>
+                <th>Email</th>
+                <th>Téléphone</th>
+                <th class="th-actions">Actions</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    Données stockées localement dans le navigateur (LocalStorage). Pense à exporter régulièrement.
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

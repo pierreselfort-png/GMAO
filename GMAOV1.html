@@ -237,7 +237,7 @@ function confirmDanger(message){
 ============================ */
 const DB_KEY = "GMAO_LOCAL_V1";
 const REMOTE_CONFIG = {
-  sheetApiUrl: "https://script.google.com/macros/s/AKfycbwD1iHHaRPki9SOHgbe_fC49S_q9RJ7jbL2rtmlVkHGCV5DzDa-PqbxBaQWB3nDnvrSzw/exec" // URL de l'Apps Script (Web App) pour Google Sheet
+  sheetApiUrl: "" // URL de l'Apps Script (Web App) pour Google Sheet
 };
 
 const defaultDB = () => ({
@@ -297,7 +297,7 @@ async function pushRemoteDB(){
   if(!REMOTE_CONFIG.sheetApiUrl) return;
   const res = await fetch(REMOTE_CONFIG.sheetApiUrl, {
     method:"POST",
-    headers:{ "Content-Type":"application/json" },
+    headers:{ "Content-Type":"text/plain;charset=utf-8" },
     body: JSON.stringify(db)
   });
   if(!res.ok) throw new Error("Écriture distante impossible");

@@ -150,6 +150,7 @@
         <button class="btn" id="btnExport">Exporter JSON</button>
         <label class="btn" for="importFile" style="cursor:pointer">Importer JSON</label>
         <input id="importFile" type="file" accept="application/json" style="display:none" />
+        <button class="btn" id="btnSync">Sync</button>
         <button class="btn danger" id="btnReset">Reset (tout effacer)</button>
       </div>
     </div>
@@ -203,7 +204,7 @@
     </div>
 
     <div class="footer">
-      Données stockées en <b>localStorage</b>. Pour partager entre plusieurs postes : Google Sheet / serveur / base.
+      Données stockées en <b>localStorage</b> (cache) ou synchronisées vers <b>Google Sheet</b> si configuré.
     </div>
   </main>
 
@@ -235,6 +236,9 @@ function confirmDanger(message){
    1) Data model + storage
 ============================ */
 const DB_KEY = "GMAO_LOCAL_V1";
+const REMOTE_CONFIG = {
+  sheetApiUrl: "" // URL de l'Apps Script (Web App) pour Google Sheet
+};
 
 const defaultDB = () => ({
   fournisseurs: [
@@ -254,28 +258,77 @@ const defaultDB = () => ({
   ]
 });
 
+function normalizeDB(parsed){
+  return {
+    fournisseurs: Array.isArray(parsed.fournisseurs) ? parsed.fournisseurs : [],
+    machines: Array.isArray(parsed.machines) ? parsed.machines : [],
+    stocks: Array.isArray(parsed.stocks) ? parsed.stocks : [],
+    interventions: Array.isArray(parsed.interventions) ? parsed.interventions : [],
+    tickets: Array.isArray(parsed.tickets) ? parsed.tickets : [],
+  };
+}
+
 function loadDB(){
   try{
     const raw = localStorage.getItem(DB_KEY);
     if(!raw) return defaultDB();
     const parsed = JSON.parse(raw);
     // garde-fou minimal
-    return {
-      fournisseurs: Array.isArray(parsed.fournisseurs) ? parsed.fournisseurs : [],
-      machines: Array.isArray(parsed.machines) ? parsed.machines : [],
-      stocks: Array.isArray(parsed.stocks) ? parsed.stocks : [],
-      interventions: Array.isArray(parsed.interventions) ? parsed.interventions : [],
-      tickets: Array.isArray(parsed.tickets) ? parsed.tickets : [],
-    };
+    return normalizeDB(parsed);
   }catch(e){
     console.error(e);
     return defaultDB();
   }
 }
-function saveDB(){
+
+function saveCache(){
   localStorage.setItem(DB_KEY, JSON.stringify(db));
 }
-let db = loadDB();
+
+async function fetchRemoteDB(){
+  if(!REMOTE_CONFIG.sheetApiUrl) return null;
+  const res = await fetch(REMOTE_CONFIG.sheetApiUrl, { method:"GET" });
+  if(!res.ok) throw new Error("Lecture distante impossible");
+  const data = await res.json();
+  return normalizeDB(data || {});
+}
+
+async function pushRemoteDB(){
+  if(!REMOTE_CONFIG.sheetApiUrl) return;
+  const res = await fetch(REMOTE_CONFIG.sheetApiUrl, {
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body: JSON.stringify(db)
+  });
+  if(!res.ok) throw new Error("Écriture distante impossible");
+}
+
+function saveDB(){
+  saveCache();
+  pushRemoteDB()
+    .then(()=>toast("Synchronisé", "Google Sheet mis à jour"))
+    .catch((err)=>{
+      console.error(err);
+      toast("Sync distante échouée", "Les données restent en cache local");
+    });
+}
+
+async function refreshFromRemote(){
+  try{
+    const remote = await fetchRemoteDB();
+    if(remote){
+      db = remote;
+      saveCache();
+      render();
+      toast("Synchronisé", "Données chargées depuis Google Sheet");
+    }
+  }catch(err){
+    console.error(err);
+    toast("Chargement distant échoué", "Utilisation du cache local");
+  }
+}
+
+let db = defaultDB();
 
 /* ============================
    2) Entity config (fields, table columns)
@@ -968,6 +1021,10 @@ document.getElementById("btnExport").onclick = ()=>{
   toast("Export JSON", "Fichier téléchargé");
 };
 
+document.getElementById("btnSync").onclick = ()=>{
+  refreshFromRemote();
+};
+
 document.getElementById("importFile").addEventListener("change", async (e)=>{
   const file = e.target.files?.[0];
   if(!file) return;
@@ -1009,8 +1066,10 @@ document.getElementById("btnReset").onclick = ()=>{
 /* ============================
    9) Boot
 ============================ */
+db = loadDB();
 initTabs();
 render();
+refreshFromRemote();
 </script>
 
 </body>

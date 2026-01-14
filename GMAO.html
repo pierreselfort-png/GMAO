@@ -1,0 +1,912 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>GMAO – HTML (Local)</title>
+  <style>
+    :root{
+      --bg:#0b0f14;
+      --panel:#0f172a;
+      --panel2:#111827;
+      --card:#0b1220;
+      --text:#e5e7eb;
+      --muted:#9ca3af;
+      --line:#243044;
+      --accent:#60a5fa;
+      --good:#22c55e;
+      --warn:#f59e0b;
+      --bad:#ef4444;
+      --chip:#1f2937;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+    a{color:var(--accent);text-decoration:none}
+    .app{min-height:100vh;display:flex;flex-direction:column}
+    header{
+      position:sticky;top:0;z-index:5;
+      background:linear-gradient(180deg, rgba(15,23,42,0.98), rgba(15,23,42,0.85));
+      border-bottom:1px solid var(--line);
+      backdrop-filter: blur(10px);
+    }
+    .topbar{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:14px 16px}
+    .brand{display:flex;gap:10px;align-items:center}
+    .logo{
+      width:34px;height:34px;border-radius:12px;
+      background:radial-gradient(circle at 30% 30%, #93c5fd, #1d4ed8 60%, #0b1220);
+      border:1px solid rgba(255,255,255,0.12);
+      box-shadow:0 10px 30px rgba(0,0,0,0.35);
+    }
+    h1{font-size:16px;margin:0;font-weight:650;letter-spacing:0.2px}
+    .subtitle{font-size:12px;color:var(--muted);margin-top:2px}
+    .actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+    .btn{
+      border:1px solid rgba(255,255,255,0.12);
+      background:rgba(17,24,39,0.7);
+      color:var(--text);
+      padding:8px 10px;border-radius:12px;
+      cursor:pointer;font-size:12px;
+    }
+    .btn:hover{border-color:rgba(96,165,250,0.55)}
+    .btn.primary{background:rgba(96,165,250,0.15);border-color:rgba(96,165,250,0.5)}
+    .btn.danger{background:rgba(239,68,68,0.12);border-color:rgba(239,68,68,0.45)}
+    .btn:disabled{opacity:.5;cursor:not-allowed}
+    .tabs{
+      display:flex;gap:6px;flex-wrap:wrap;
+      padding:0 12px 12px 12px;
+    }
+    .tab{
+      border:1px solid rgba(255,255,255,0.10);
+      background:rgba(17,24,39,0.35);
+      padding:8px 10px;border-radius:999px;
+      cursor:pointer;font-size:12px;color:var(--muted);
+    }
+    .tab.active{color:var(--text);border-color:rgba(96,165,250,0.55);background:rgba(96,165,250,0.10)}
+    main{padding:16px;max-width:1200px;width:100%;margin:0 auto}
+    .grid{display:grid;grid-template-columns:1.1fr 1.9fr;gap:14px}
+    @media (max-width: 980px){.grid{grid-template-columns:1fr}}
+    .card{
+      background:linear-gradient(180deg, rgba(17,24,39,0.8), rgba(11,18,32,0.8));
+      border:1px solid rgba(255,255,255,0.10);
+      border-radius:18px;
+      box-shadow:0 18px 55px rgba(0,0,0,0.35);
+      overflow:hidden;
+    }
+    .cardHeader{padding:14px 14px 10px 14px;border-bottom:1px solid rgba(255,255,255,0.08)}
+    .cardTitle{margin:0;font-size:13px;font-weight:650}
+    .cardBody{padding:14px}
+    .row{display:flex;gap:10px;flex-wrap:wrap}
+    .field{display:flex;flex-direction:column;gap:6px;flex:1;min-width:170px;margin-bottom:10px}
+    label{font-size:11px;color:var(--muted)}
+    input, textarea, select{
+      width:100%;
+      background:rgba(15,23,42,0.6);
+      border:1px solid rgba(255,255,255,0.10);
+      color:var(--text);
+      border-radius:12px;
+      padding:10px 10px;
+      outline:none;
+      font-size:13px;
+    }
+    textarea{min-height:86px;resize:vertical}
+    input:focus,textarea:focus,select:focus{border-color:rgba(96,165,250,0.55)}
+    .hint{font-size:11px;color:var(--muted);margin-top:-4px}
+    .tableWrap{overflow:auto}
+    table{width:100%;border-collapse:separate;border-spacing:0}
+    th, td{padding:10px 10px;border-bottom:1px solid rgba(255,255,255,0.07);vertical-align:top;font-size:12px}
+    th{position:sticky;top:0;background:rgba(15,23,42,0.9);backdrop-filter:blur(6px);text-align:left;color:var(--muted);font-weight:600;z-index:1}
+    tr:hover td{background:rgba(96,165,250,0.06)}
+    .pill{display:inline-flex;align-items:center;gap:6px;padding:4px 8px;border-radius:999px;background:rgba(31,41,55,0.9);border:1px solid rgba(255,255,255,0.08);font-size:11px;color:var(--muted)}
+    .dot{width:8px;height:8px;border-radius:999px;background:var(--muted)}
+    .dot.good{background:var(--good)}
+    .dot.warn{background:var(--warn)}
+    .dot.bad{background:var(--bad)}
+    .toolbar{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:10px}
+    .search{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+    .search input{min-width:260px}
+    .tiny{font-size:11px;color:var(--muted)}
+    .kpi{display:flex;gap:10px;flex-wrap:wrap}
+    .kpi .pill{background:rgba(17,24,39,0.7)}
+    .rightBtns{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+    .toast{
+      position:fixed;right:16px;bottom:16px;z-index:50;
+      background:rgba(17,24,39,0.92);
+      border:1px solid rgba(255,255,255,0.12);
+      padding:10px 12px;border-radius:14px;max-width:360px;
+      box-shadow:0 20px 60px rgba(0,0,0,0.5);
+      display:none;
+      font-size:12px;color:var(--text);
+    }
+    .toast.show{display:block}
+    .toast .muted{color:var(--muted);font-size:11px;margin-top:2px}
+    .footer{padding:16px;color:var(--muted);font-size:11px;text-align:center}
+    .dangerText{color:rgba(239,68,68,0.95)}
+  </style>
+</head>
+
+<body>
+<div class="app">
+
+  <header>
+    <div class="topbar">
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <div>
+          <h1>GMAO – Local (HTML)</h1>
+          <div class="subtitle">Stocks • Fournisseurs • Machines • Interventions • Tickets</div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn" id="btnExport">Exporter JSON</button>
+        <label class="btn" for="importFile" style="cursor:pointer">Importer JSON</label>
+        <input id="importFile" type="file" accept="application/json" style="display:none" />
+        <button class="btn danger" id="btnReset">Reset (tout effacer)</button>
+      </div>
+    </div>
+
+    <div class="tabs" id="tabs"></div>
+  </header>
+
+  <main>
+    <div class="grid">
+      <!-- Form -->
+      <section class="card">
+        <div class="cardHeader">
+          <h2 class="cardTitle" id="formTitle">—</h2>
+        </div>
+        <div class="cardBody" id="formArea"></div>
+      </section>
+
+      <!-- List -->
+      <section class="card">
+        <div class="cardHeader">
+          <h2 class="cardTitle" id="listTitle">—</h2>
+        </div>
+        <div class="cardBody">
+          <div class="toolbar">
+            <div class="search">
+              <input id="searchInput" placeholder="Rechercher…" />
+              <span class="tiny" id="countLabel">0 éléments</span>
+            </div>
+            <div class="rightBtns">
+              <button class="btn" id="btnNew">Nouveau</button>
+            </div>
+          </div>
+
+          <div class="kpi" id="kpis"></div>
+
+          <div class="tableWrap" style="margin-top:10px">
+            <table>
+              <thead id="thead"></thead>
+              <tbody id="tbody"></tbody>
+            </table>
+          </div>
+
+          <div class="tiny" style="margin-top:10px">
+            Astuce : clique sur une ligne pour <b>éditer</b>. Le bouton 🗑️ supprime.
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div class="footer">
+      Données stockées en <b>localStorage</b>. Pour partager entre plusieurs postes : Google Sheet / serveur / base.
+    </div>
+  </main>
+
+  <div class="toast" id="toast"></div>
+</div>
+
+<script>
+/* ============================
+   0) Utils
+============================ */
+const uid = () => (crypto?.randomUUID ? crypto.randomUUID() : ("id_" + Math.random().toString(16).slice(2) + Date.now()));
+const nowISO = () => new Date().toISOString().slice(0,16); // yyyy-mm-ddThh:mm
+const fmt = (s) => (s ?? "").toString().trim();
+const safeInt = (v, def=0) => {
+  const n = parseInt(v, 10);
+  return Number.isFinite(n) ? n : def;
+};
+function toast(msg, sub=""){
+  const t = document.getElementById("toast");
+  t.innerHTML = `<div>${msg}</div>${sub ? `<div class="muted">${sub}</div>` : ""}`;
+  t.classList.add("show");
+  setTimeout(()=>t.classList.remove("show"), 2600);
+}
+function confirmDanger(message){
+  return window.confirm(message);
+}
+
+/* ============================
+   1) Data model + storage
+============================ */
+const DB_KEY = "GMAO_LOCAL_V1";
+
+const defaultDB = () => ({
+  fournisseurs: [
+    { id: uid(), entreprise:"ACME Industrie", nomContact:"Mme Dupont", tel:"0600000000", mail:"contact@acme.fr" },
+  ],
+  machines: [
+    { id: uid(), numeroUnique:"M-001", nom:"Presse Hydraulique", lieu:"Atelier A", etat:"ok", fournisseurId:"", documentation:"" }
+  ],
+  stocks: [
+    { id: uid(), reference:"REF-1001", quantite:12, nom:"Courroie", description:"Courroie de transmission", stockSecu:5, machineId:"", fournisseurId:"" }
+  ],
+  interventions: [
+    { id: uid(), numero:"INT-0001", technicien:"Pierre", nom:"Contrôle niveau huile", description:"Vérifier le niveau + appoint", date: nowISO(), statut:"a_planifier", importance:"moyen", machineId:"" }
+  ],
+  tickets: [
+    { id: uid(), numero:"TIC-0001", demandeur:"Production", sujet:"Bruit anormal", description:"Bruit côté moteur", dateCreation: nowISO(), statut:"ouvert", importance:"haut", machineId:"", lienInterventionId:"" }
+  ]
+});
+
+function loadDB(){
+  try{
+    const raw = localStorage.getItem(DB_KEY);
+    if(!raw) return defaultDB();
+    const parsed = JSON.parse(raw);
+    // garde-fou minimal
+    return {
+      fournisseurs: Array.isArray(parsed.fournisseurs) ? parsed.fournisseurs : [],
+      machines: Array.isArray(parsed.machines) ? parsed.machines : [],
+      stocks: Array.isArray(parsed.stocks) ? parsed.stocks : [],
+      interventions: Array.isArray(parsed.interventions) ? parsed.interventions : [],
+      tickets: Array.isArray(parsed.tickets) ? parsed.tickets : [],
+    };
+  }catch(e){
+    console.error(e);
+    return defaultDB();
+  }
+}
+function saveDB(){
+  localStorage.setItem(DB_KEY, JSON.stringify(db));
+}
+let db = loadDB();
+
+/* ============================
+   2) Entity config (fields, table columns)
+============================ */
+const ENTITIES = {
+  stocks: {
+    label: "Stocks",
+    pk: "id",
+    fields: [
+      { key:"reference", label:"Référence", type:"text", required:true, placeholder:"ex: REF-1234" },
+      { key:"quantite", label:"Quantité", type:"number", required:true, placeholder:"0" },
+      { key:"nom", label:"Nom", type:"text", required:true, placeholder:"ex: Roulement 6203" },
+      { key:"description", label:"Description", type:"textarea", required:false, placeholder:"Détails de la pièce…" },
+      { key:"stockSecu", label:"Stock de sécurité", type:"number", required:true, placeholder:"0" },
+      { key:"machineId", label:"Machine associée", type:"select_machine", required:false },
+      { key:"fournisseurId", label:"Fournisseur", type:"select_fournisseur", required:false },
+    ],
+    columns: [
+      { key:"reference", label:"Référence" },
+      { key:"nom", label:"Nom" },
+      { key:"quantite", label:"Qté" },
+      { key:"stockSecu", label:"Stock sécu" },
+      { key:"machineId", label:"Machine" , render: (v)=> nameById("machines", v, "nom", "—") },
+      { key:"fournisseurId", label:"Fournisseur", render: (v)=> nameById("fournisseurs", v, "entreprise", "—") },
+      { key:"_alert", label:"Alerte", render: (_, row)=> stockAlertPill(row) },
+    ],
+    kpis: () => {
+      const totalRefs = db.stocks.length;
+      const low = db.stocks.filter(s => safeInt(s.quantite) <= safeInt(s.stockSecu)).length;
+      return [
+        { text:`${totalRefs} pièces`, dot:"" },
+        { text:`${low} sous le stock sécu`, dot: low>0 ? "warn" : "good" }
+      ];
+    }
+  },
+
+  fournisseurs: {
+    label: "Fournisseurs",
+    pk: "id",
+    fields: [
+      { key:"entreprise", label:"Entreprise", type:"text", required:true, placeholder:"ex: Trigano Supplies" },
+      { key:"nomContact", label:"Nom contact", type:"text", required:true, placeholder:"ex: M. Martin" },
+      { key:"tel", label:"Numéro", type:"tel", required:false, placeholder:"ex: 06…" },
+      { key:"mail", label:"Mail", type:"email", required:false, placeholder:"ex: martin@…" },
+    ],
+    columns: [
+      { key:"entreprise", label:"Entreprise" },
+      { key:"nomContact", label:"Contact" },
+      { key:"tel", label:"Téléphone" },
+      { key:"mail", label:"Email" },
+    ],
+    kpis: () => [{ text:`${db.fournisseurs.length} fournisseurs`, dot:"" }]
+  },
+
+  machines: {
+    label: "Machines",
+    pk: "id",
+    fields: [
+      { key:"numeroUnique", label:"N° unique machine", type:"text", required:true, placeholder:"ex: M-002" },
+      { key:"nom", label:"Nom machine", type:"text", required:true, placeholder:"ex: Convoyeur 3" },
+      { key:"lieu", label:"Lieu de stockage", type:"text", required:false, placeholder:"ex: Atelier B" },
+      { key:"etat", label:"État", type:"select", required:true, options:[
+        {value:"ok", label:"OK"},
+        {value:"hs", label:"HS"},
+        {value:"en_reparation", label:"En réparation"},
+      ]},
+      { key:"fournisseurId", label:"Fournisseur", type:"select_fournisseur", required:false },
+      { key:"documentation", label:"Documentation (lien)", type:"url", required:false, placeholder:"https://…" },
+    ],
+    columns: [
+      { key:"numeroUnique", label:"N°" },
+      { key:"nom", label:"Machine" },
+      { key:"lieu", label:"Lieu" },
+      { key:"etat", label:"État", render:(v)=> etatPill(v) },
+      { key:"fournisseurId", label:"Fournisseur", render:(v)=> nameById("fournisseurs", v, "entreprise", "—") },
+      { key:"documentation", label:"Doc", render:(v)=> v ? `<a href="${escapeAttr(v)}" target="_blank">Ouvrir</a>` : "—" },
+    ],
+    kpis: () => {
+      const hs = db.machines.filter(m => m.etat==="hs").length;
+      const rep = db.machines.filter(m => m.etat==="en_reparation").length;
+      return [
+        { text:`${db.machines.length} machines`, dot:"" },
+        { text:`${hs} HS`, dot: hs>0 ? "bad":"good" },
+        { text:`${rep} en réparation`, dot: rep>0 ? "warn":"good" },
+      ];
+    }
+  },
+
+  interventions: {
+    label: "Interventions",
+    pk: "id",
+    fields: [
+      { key:"numero", label:"N° d'intervention", type:"text", required:true, placeholder:"ex: INT-0002" },
+      { key:"technicien", label:"Technicien", type:"text", required:true, placeholder:"ex: Alex" },
+      { key:"nom", label:"Nom intervention", type:"text", required:true, placeholder:"ex: Remplacement filtre" },
+      { key:"description", label:"Description", type:"textarea", required:false, placeholder:"Détails…" },
+      { key:"date", label:"Date", type:"datetime-local", required:true },
+      { key:"statut", label:"Statut", type:"select", required:true, options:[
+        {value:"a_planifier", label:"À planifier"},
+        {value:"planifie", label:"Planifié"},
+        {value:"en_cours", label:"En cours"},
+        {value:"termine", label:"Terminé"},
+        {value:"annule", label:"Annulé"},
+      ]},
+      { key:"importance", label:"Niveau d'importance", type:"select", required:true, options:[
+        {value:"bas", label:"Bas"},
+        {value:"moyen", label:"Moyen"},
+        {value:"haut", label:"Haut"},
+        {value:"critique", label:"Critique"},
+      ]},
+      { key:"machineId", label:"Machine", type:"select_machine", required:false },
+    ],
+    columns: [
+      { key:"numero", label:"N°" },
+      { key:"nom", label:"Intervention" },
+      { key:"technicien", label:"Technicien" },
+      { key:"date", label:"Date", render:(v)=> v ? new Date(v).toLocaleString() : "—" },
+      { key:"statut", label:"Statut", render:(v)=> statutPill(v) },
+      { key:"importance", label:"Importance", render:(v)=> importancePill(v) },
+      { key:"machineId", label:"Machine", render:(v)=> nameById("machines", v, "nom", "—") },
+    ],
+    kpis: () => {
+      const open = db.interventions.filter(i => i.statut!=="termine" && i.statut!=="annule").length;
+      return [
+        { text:`${db.interventions.length} interventions`, dot:"" },
+        { text:`${open} en cours / à faire`, dot: open>0 ? "warn":"good" },
+      ];
+    }
+  },
+
+  tickets: {
+    label: "Tickets",
+    pk: "id",
+    fields: [
+      { key:"numero", label:"N° ticket", type:"text", required:true, placeholder:"ex: TIC-0002" },
+      { key:"demandeur", label:"Demandeur", type:"text", required:true, placeholder:"ex: Production" },
+      { key:"sujet", label:"Sujet", type:"text", required:true, placeholder:"ex: Fuite d'air" },
+      { key:"description", label:"Description", type:"textarea", required:false, placeholder:"Contexte…" },
+      { key:"dateCreation", label:"Date création", type:"datetime-local", required:true },
+      { key:"statut", label:"Statut", type:"select", required:true, options:[
+        {value:"ouvert", label:"Ouvert"},
+        {value:"en_traitement", label:"En traitement"},
+        {value:"clos", label:"Clos"},
+      ]},
+      { key:"importance", label:"Importance", type:"select", required:true, options:[
+        {value:"bas", label:"Bas"},
+        {value:"moyen", label:"Moyen"},
+        {value:"haut", label:"Haut"},
+        {value:"critique", label:"Critique"},
+      ]},
+      { key:"machineId", label:"Machine", type:"select_machine", required:false },
+      // action spéciale
+      { key:"_createIntervention", label:"Créer une intervention à partir du ticket", type:"action_create_intervention" }
+    ],
+    columns: [
+      { key:"numero", label:"N°" },
+      { key:"sujet", label:"Sujet" },
+      { key:"demandeur", label:"Demandeur" },
+      { key:"dateCreation", label:"Créé", render:(v)=> v ? new Date(v).toLocaleString() : "—" },
+      { key:"statut", label:"Statut", render:(v)=> ticketStatutPill(v) },
+      { key:"importance", label:"Importance", render:(v)=> importancePill(v) },
+      { key:"machineId", label:"Machine", render:(v)=> nameById("machines", v, "nom", "—") },
+      { key:"lienInterventionId", label:"Intervention", render:(v)=> v ? linkToIntervention(v) : "—" },
+    ],
+    kpis: () => {
+      const open = db.tickets.filter(t => t.statut!=="clos").length;
+      return [
+        { text:`${db.tickets.length} tickets`, dot:"" },
+        { text:`${open} ouverts`, dot: open>0 ? "warn":"good" }
+      ];
+    }
+  }
+};
+
+function escapeAttr(str){
+  return (str ?? "").toString().replaceAll('"', "&quot;");
+}
+function nameById(entityKey, id, field="nom", fallback="—"){
+  const x = db[entityKey].find(r => r.id === id);
+  return x ? (x[field] || fallback) : fallback;
+}
+
+/* ============================
+   3) Pills / render helpers
+============================ */
+function etatPill(etat){
+  const map = {
+    ok: {t:"OK", d:"good"},
+    hs: {t:"HS", d:"bad"},
+    en_reparation: {t:"En réparation", d:"warn"}
+  };
+  const it = map[etat] || {t: etat || "—", d:""};
+  return `<span class="pill"><span class="dot ${it.d}"></span>${it.t}</span>`;
+}
+function statutPill(s){
+  const map = {
+    a_planifier:{t:"À planifier", d:"warn"},
+    planifie:{t:"Planifié", d:"good"},
+    en_cours:{t:"En cours", d:"warn"},
+    termine:{t:"Terminé", d:"good"},
+    annule:{t:"Annulé", d:"bad"},
+  };
+  const it = map[s] || {t:s||"—", d:""};
+  return `<span class="pill"><span class="dot ${it.d}"></span>${it.t}</span>`;
+}
+function ticketStatutPill(s){
+  const map = {
+    ouvert:{t:"Ouvert", d:"warn"},
+    en_traitement:{t:"En traitement", d:"warn"},
+    clos:{t:"Clos", d:"good"},
+  };
+  const it = map[s] || {t:s||"—", d:""};
+  return `<span class="pill"><span class="dot ${it.d}"></span>${it.t}</span>`;
+}
+function importancePill(i){
+  const map = {
+    bas:{t:"Bas", d:"good"},
+    moyen:{t:"Moyen", d:"warn"},
+    haut:{t:"Haut", d:"warn"},
+    critique:{t:"Critique", d:"bad"},
+  };
+  const it = map[i] || {t:i||"—", d:""};
+  return `<span class="pill"><span class="dot ${it.d}"></span>${it.t}</span>`;
+}
+function stockAlertPill(row){
+  const q = safeInt(row.quantite);
+  const s = safeInt(row.stockSecu);
+  if(q <= s){
+    return `<span class="pill"><span class="dot warn"></span>Bas (${q} ≤ ${s})</span>`;
+  }
+  return `<span class="pill"><span class="dot good"></span>OK</span>`;
+}
+function linkToIntervention(interventionId){
+  const it = db.interventions.find(i => i.id===interventionId);
+  if(!it) return "—";
+  return `<span class="pill"><span class="dot good"></span>${it.numero}</span>`;
+}
+
+/* ============================
+   4) UI state
+============================ */
+let currentEntity = "stocks";
+let editingId = null;
+
+const tabsEl = document.getElementById("tabs");
+const formTitle = document.getElementById("formTitle");
+const listTitle = document.getElementById("listTitle");
+const formArea = document.getElementById("formArea");
+const thead = document.getElementById("thead");
+const tbody = document.getElementById("tbody");
+const searchInput = document.getElementById("searchInput");
+const countLabel = document.getElementById("countLabel");
+const kpisEl = document.getElementById("kpis");
+
+function initTabs(){
+  tabsEl.innerHTML = "";
+  Object.entries(ENTITIES).forEach(([key, cfg])=>{
+    const b = document.createElement("button");
+    b.className = "tab" + (key===currentEntity ? " active" : "");
+    b.textContent = cfg.label;
+    b.onclick = ()=> switchEntity(key);
+    tabsEl.appendChild(b);
+  });
+}
+
+function switchEntity(key){
+  currentEntity = key;
+  editingId = null;
+  searchInput.value = "";
+  initTabs();
+  render();
+}
+
+function render(){
+  const cfg = ENTITIES[currentEntity];
+  formTitle.textContent = editingId ? `Éditer – ${cfg.label}` : `Créer – ${cfg.label}`;
+  listTitle.textContent = `Liste – ${cfg.label}`;
+  renderForm();
+  renderTable();
+  renderKPIs();
+}
+
+function renderKPIs(){
+  const cfg = ENTITIES[currentEntity];
+  const items = cfg.kpis ? cfg.kpis() : [];
+  kpisEl.innerHTML = items.map(it=>{
+    return `<span class="pill">${it.dot ? `<span class="dot ${it.dot}"></span>`:""}${it.text}</span>`;
+  }).join("");
+}
+
+/* ============================
+   5) Form builder
+============================ */
+function renderForm(){
+  const cfg = ENTITIES[currentEntity];
+  const entityArr = db[currentEntity];
+  const existing = editingId ? entityArr.find(x => x.id===editingId) : null;
+
+  const html = [];
+  html.push(`<form id="entityForm">`);
+  html.push(`<div class="row">`);
+
+  for(const f of cfg.fields){
+    if(f.type === "action_create_intervention"){
+      html.push(`
+        <div class="field" style="flex:1;min-width:220px">
+          <label>${f.label}</label>
+          <button class="btn primary" type="button" id="btnCreateFromTicket" ${(!editingId ? "disabled": "")}>
+            Générer intervention
+          </button>
+          <div class="hint">Actif uniquement en édition d’un ticket.</div>
+        </div>
+      `);
+      continue;
+    }
+
+    html.push(`<div class="field">`);
+    html.push(`<label>${f.label}${f.required ? " *" : ""}</label>`);
+
+    const val = existing ? (existing[f.key] ?? "") : (f.key.includes("date") ? nowISO() : "");
+    if(f.type === "textarea"){
+      html.push(`<textarea name="${f.key}" placeholder="${escapeAttr(f.placeholder||"")}">${(val ?? "")}</textarea>`);
+    }
+    else if(f.type === "select"){
+      const opts = (f.options||[]).map(o=>{
+        const selected = (val === o.value) ? "selected" : "";
+        return `<option value="${escapeAttr(o.value)}" ${selected}>${o.label}</option>`;
+      }).join("");
+      html.push(`<select name="${f.key}">${opts}</select>`);
+    }
+    else if(f.type === "select_fournisseur"){
+      const opts = [`<option value="">—</option>`].concat(db.fournisseurs.map(fr=>{
+        const selected = (val === fr.id) ? "selected" : "";
+        return `<option value="${escapeAttr(fr.id)}" ${selected}>${fr.entreprise} – ${fr.nomContact}</option>`;
+      }));
+      html.push(`<select name="${f.key}">${opts.join("")}</select>`);
+    }
+    else if(f.type === "select_machine"){
+      const opts = [`<option value="">—</option>`].concat(db.machines.map(m=>{
+        const selected = (val === m.id) ? "selected" : "";
+        return `<option value="${escapeAttr(m.id)}" ${selected}>${m.numeroUnique} – ${m.nom}</option>`;
+      }));
+      html.push(`<select name="${f.key}">${opts.join("")}</select>`);
+    }
+    else{
+      const type = f.type || "text";
+      const valueAttr = (type==="datetime-local") ? `value="${escapeAttr(val)}"` : `value="${escapeAttr(val)}"`;
+      html.push(`<input type="${type}" name="${f.key}" placeholder="${escapeAttr(f.placeholder||"")}" ${valueAttr} />`);
+    }
+
+    html.push(`</div>`);
+  }
+
+  html.push(`</div>`);
+
+  html.push(`
+    <div class="row" style="justify-content:flex-end;margin-top:6px">
+      ${editingId ? `<button class="btn" type="button" id="btnCancelEdit">Annuler</button>` : ""}
+      <button class="btn primary" type="submit">${editingId ? "Enregistrer" : "Créer"}</button>
+    </div>
+    <div class="hint">* champs requis</div>
+  `);
+
+  html.push(`</form>`);
+  formArea.innerHTML = html.join("");
+
+  // bind
+  const form = document.getElementById("entityForm");
+  form.onsubmit = (e)=>{
+    e.preventDefault();
+    handleSubmit(form);
+  };
+
+  const btnCancelEdit = document.getElementById("btnCancelEdit");
+  if(btnCancelEdit){
+    btnCancelEdit.onclick = ()=>{
+      editingId = null;
+      render();
+    };
+  }
+
+  const btnCreateFromTicket = document.getElementById("btnCreateFromTicket");
+  if(btnCreateFromTicket){
+    btnCreateFromTicket.onclick = ()=>{
+      if(currentEntity!=="tickets" || !editingId) return;
+      createInterventionFromTicket(editingId);
+    };
+  }
+}
+
+function handleSubmit(form){
+  const cfg = ENTITIES[currentEntity];
+  const fd = new FormData(form);
+  const obj = editingId ? {...db[currentEntity].find(x=>x.id===editingId)} : { id: uid() };
+
+  // validate + assign
+  for(const f of cfg.fields){
+    if(f.type === "action_create_intervention") continue;
+    const raw = fmt(fd.get(f.key));
+    let value = raw;
+
+    if(f.type === "number") value = safeInt(raw, 0);
+    if(f.type === "datetime-local"){
+      // keep as ISO-like local input string
+      value = raw || nowISO();
+    }
+
+    if(f.required && (value === "" || value === null || value === undefined)){
+      toast("Champ requis manquant", f.label);
+      return;
+    }
+    obj[f.key] = value;
+  }
+
+  // upsert
+  if(editingId){
+    const idx = db[currentEntity].findIndex(x=>x.id===editingId);
+    if(idx >= 0) db[currentEntity][idx] = obj;
+    toast("Modifié", `${ENTITIES[currentEntity].label} mise à jour`);
+  }else{
+    db[currentEntity].unshift(obj);
+    toast("Créé", `${ENTITIES[currentEntity].label} ajouté`);
+  }
+
+  saveDB();
+  editingId = null;
+  render();
+}
+
+/* ============================
+   6) Table renderer
+============================ */
+function renderTable(){
+  const cfg = ENTITIES[currentEntity];
+  const query = fmt(searchInput.value).toLowerCase();
+
+  const rows = db[currentEntity]
+    .filter(r => {
+      if(!query) return true;
+      return JSON.stringify(r).toLowerCase().includes(query);
+    });
+
+  // header
+  thead.innerHTML = `
+    <tr>
+      ${cfg.columns.map(c=>`<th>${c.label}</th>`).join("")}
+      <th style="width:72px">Actions</th>
+    </tr>
+  `;
+
+  // body
+  tbody.innerHTML = rows.map(r=>{
+    const tds = cfg.columns.map(c=>{
+      const val = r[c.key];
+      const cell = c.render ? c.render(val, r) : escapeHTML(val);
+      return `<td>${cell}</td>`;
+    }).join("");
+
+    return `
+      <tr data-id="${escapeAttr(r.id)}" class="rowClick">
+        ${tds}
+        <td>
+          <button class="btn" data-act="edit" title="Éditer">✏️</button>
+          <button class="btn danger" data-act="del" title="Supprimer">🗑️</button>
+        </td>
+      </tr>
+    `;
+  }).join("");
+
+  countLabel.textContent = `${rows.length} élément(s)`;
+
+  // bind row actions
+  tbody.querySelectorAll("tr").forEach(tr=>{
+    const id = tr.getAttribute("data-id");
+    tr.addEventListener("click", (e)=>{
+      const btn = e.target.closest("button");
+      if(btn){
+        const act = btn.getAttribute("data-act");
+        if(act==="edit") startEdit(id);
+        if(act==="del") delRow(id);
+        e.stopPropagation();
+        return;
+      }
+      startEdit(id);
+    });
+  });
+}
+
+function startEdit(id){
+  editingId = id;
+  render();
+}
+
+function delRow(id){
+  const cfg = ENTITIES[currentEntity];
+  const row = db[currentEntity].find(x=>x.id===id);
+  if(!row) return;
+
+  // règles simples pour éviter de casser les relations
+  if(currentEntity==="fournisseurs"){
+    const usedInStocks = db.stocks.some(s => s.fournisseurId===id);
+    const usedInMachines = db.machines.some(m => m.fournisseurId===id);
+    if(usedInStocks || usedInMachines){
+      toast("Suppression bloquée", "Ce fournisseur est référencé (stocks/machines).");
+      return;
+    }
+  }
+  if(currentEntity==="machines"){
+    const usedInStocks = db.stocks.some(s => s.machineId===id);
+    const usedInInterventions = db.interventions.some(i => i.machineId===id);
+    const usedInTickets = db.tickets.some(t => t.machineId===id);
+    if(usedInStocks || usedInInterventions || usedInTickets){
+      toast("Suppression bloquée", "Cette machine est référencée (stocks/interventions/tickets).");
+      return;
+    }
+  }
+
+  const label = cfg.label;
+  const ok = confirmDanger(`Supprimer cet élément de ${label} ?`);
+  if(!ok) return;
+
+  db[currentEntity] = db[currentEntity].filter(x=>x.id!==id);
+
+  // si intervention supprimée, unlink tickets
+  if(currentEntity==="interventions"){
+    db.tickets = db.tickets.map(t => t.lienInterventionId===id ? ({...t, lienInterventionId:""}) : t);
+  }
+
+  saveDB();
+  toast("Supprimé", `${label} retiré`);
+  if(editingId===id) editingId=null;
+  render();
+}
+
+function escapeHTML(v){
+  const s = (v ?? "").toString();
+  return s
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;");
+}
+
+/* ============================
+   7) Ticket -> Intervention
+============================ */
+function createInterventionFromTicket(ticketId){
+  const t = db.tickets.find(x=>x.id===ticketId);
+  if(!t) return;
+
+  if(t.lienInterventionId){
+    toast("Déjà lié", "Ce ticket a déjà une intervention associée.");
+    return;
+  }
+
+  const newIntervention = {
+    id: uid(),
+    numero: "INT-" + String(1000 + db.interventions.length + 1).slice(-4),
+    technicien: "—",
+    nom: `[Ticket ${t.numero}] ${t.sujet}`,
+    description: t.description || "",
+    date: nowISO(),
+    statut: "a_planifier",
+    importance: t.importance || "moyen",
+    machineId: t.machineId || ""
+  };
+
+  db.interventions.unshift(newIntervention);
+  t.lienInterventionId = newIntervention.id;
+  t.statut = "en_traitement";
+
+  saveDB();
+  toast("Intervention créée", `${newIntervention.numero} générée depuis ${t.numero}`);
+  render();
+}
+
+/* ============================
+   8) Top actions: New / Search / Export / Import / Reset
+============================ */
+document.getElementById("btnNew").onclick = ()=>{
+  editingId = null;
+  render();
+};
+
+searchInput.addEventListener("input", ()=>{
+  renderTable();
+  renderKPIs();
+});
+
+document.getElementById("btnExport").onclick = ()=>{
+  const blob = new Blob([JSON.stringify(db, null, 2)], {type:"application/json"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `gmao_export_${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast("Export JSON", "Fichier téléchargé");
+};
+
+document.getElementById("importFile").addEventListener("change", async (e)=>{
+  const file = e.target.files?.[0];
+  if(!file) return;
+  try{
+    const text = await file.text();
+    const imported = JSON.parse(text);
+
+    // merge/replace simple
+    const next = {
+      fournisseurs: Array.isArray(imported.fournisseurs) ? imported.fournisseurs : [],
+      machines: Array.isArray(imported.machines) ? imported.machines : [],
+      stocks: Array.isArray(imported.stocks) ? imported.stocks : [],
+      interventions: Array.isArray(imported.interventions) ? imported.interventions : [],
+      tickets: Array.isArray(imported.tickets) ? imported.tickets : [],
+    };
+
+    db = next;
+    saveDB();
+    toast("Import JSON", "Données chargées");
+    render();
+  }catch(err){
+    console.error(err);
+    toast("Import impossible", "JSON invalide");
+  }finally{
+    e.target.value = "";
+  }
+});
+
+document.getElementById("btnReset").onclick = ()=>{
+  const ok = confirmDanger("Reset : effacer toutes les données locales ?");
+  if(!ok) return;
+  db = defaultDB();
+  saveDB();
+  editingId = null;
+  toast("Reset", "Données réinitialisées");
+  render();
+};
+
+/* ============================
+   9) Boot
+============================ */
+initTabs();
+render();
+</script>
+
+</body>
+</html>

@@ -237,7 +237,7 @@ function confirmDanger(message){
 ============================ */
 const DB_KEY = "GMAO_LOCAL_V1";
 const REMOTE_CONFIG = {
-  sheetApiUrl: "https://script.google.com/macros/s/AKfycbwD1iHHaRPki9SOHgbe_fC49S_q9RJ7jbL2rtmlVkHGCV5DzDa-PqbxBaQWB3nDnvrSzw/exec" // URL de l'Apps Script (Web App) pour Google Sheet
+  sheetApiUrl: "" // URL de l'Apps Script (Web App) pour Google Sheet
 };
 
 const defaultDB = () => ({
@@ -289,8 +289,15 @@ async function fetchRemoteDB(){
   if(!REMOTE_CONFIG.sheetApiUrl) return null;
   const res = await fetch(REMOTE_CONFIG.sheetApiUrl, { method:"GET" });
   if(!res.ok) throw new Error("Lecture distante impossible");
-  const data = await res.json();
-  return normalizeDB(data || {});
+  const text = await res.text();
+  if(!text) return normalizeDB({});
+  try{
+    const data = JSON.parse(text);
+    return normalizeDB(data || {});
+  }catch(err){
+    console.error(err);
+    throw new Error("Réponse distante invalide");
+  }
 }
 
 async function pushRemoteDB(){
